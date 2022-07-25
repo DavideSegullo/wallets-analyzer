@@ -11,9 +11,7 @@ async function bootstrap() {
     .get(BanksService, { strict: true });
 
   await banksService.connect('https://rpc-bitsong.itastakers.com');
-  const balances = await banksService
-    .getBalances('bitsong1cedfdergrqt686qaw86tqkr9wjp9h209uk6g3x')
-    .toPromise();
+  const balances = await banksService.getBalances('bitsong1...').toPromise();
   banksService.disconnect();
 
   console.log(balances);
