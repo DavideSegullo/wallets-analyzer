@@ -1,5 +1,5 @@
 export default () => ({
   chains: {
-    bitsong: [''],
+    bitsong: ['bitsong1...'],
   },
 });
