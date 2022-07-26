@@ -1,12 +1,13 @@
 import { MailerService } from '@nestjs-modules/mailer';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
-import { chains } from 'chain-registry';
+import { chains, assets } from 'chain-registry';
 import { lastValueFrom } from 'rxjs';
 import { AppModule } from './app.module';
 import { BanksModule } from './banks/banks.module';
 import { BanksService } from './banks/banks.service';
 import { AddressesInfo, ChainMap } from './types';
+import { toViewDenom } from './utils';
 
 async function bootstrap() {
   const app = await NestFactory.createApplicationContext(AppModule);
@@ -27,7 +28,9 @@ async function bootstrap() {
         chain.chain_name === chainName && chain.network_type === 'mainnet',
     );
 
-    if (chainInfo) {
+    const assetsList = assets.find((asset) => asset.chain_name === chainName);
+
+    if (chainInfo && assetsList) {
       const rpc = chainInfo.apis.rpc[0];
 
       await banksService.connect(rpc.address);
@@ -47,8 +50,36 @@ async function bootstrap() {
         };
       }
 
-      chainsWithInfo[chainName].addresses = addressesInfo;
-      chainsWithInfo[chainName].validatorAddresses = validatorAddressesInfo;
+      chainsWithInfo[chainName].addresses = addressesInfo.map((info) => ({
+        ...info,
+        balances: info.balances.map((balance) =>
+          toViewDenom(balance, assetsList.assets),
+        ),
+        lockedCoins: info.lockedCoins.map((lockedCoin) =>
+          toViewDenom(lockedCoin, assetsList.assets),
+        ),
+        staked: toViewDenom(info.staked, assetsList.assets),
+        stakingRewards: {
+          rewards: info.stakingRewards.rewards.map((reward) => ({
+            validatorAddress: reward.validatorAddress,
+            reward: reward.reward.map((totalReward) =>
+              toViewDenom(totalReward, assetsList.assets, 18),
+            ),
+          })),
+          total: info.stakingRewards.total.map((totalReward) =>
+            toViewDenom(totalReward, assetsList.assets, 18),
+          ),
+        },
+      }));
+
+      chainsWithInfo[chainName].validatorAddresses = validatorAddressesInfo.map(
+        (validatorInfo) => ({
+          address: validatorInfo.address,
+          commissions: validatorInfo.commissions.map((commission) =>
+            toViewDenom(commission, assetsList.assets, 18),
+          ),
+        }),
+      );
 
       banksService.disconnect();
     }
