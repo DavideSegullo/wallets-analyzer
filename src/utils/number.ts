@@ -1,5 +1,6 @@
 import { Coin } from '@cosmjs/stargate';
 import { BigNumber } from 'bignumber.js';
+import { ibcMap } from 'src/constants';
 
 export const gammToPoolAmount = (
   currentAmount: BigNumber,
@@ -23,11 +24,11 @@ export const toDenom = (
     .toString();
 };
 
-export const toViewDenom = (
+export const toViewDenomByAssets = (
   coin: Coin,
   assets,
   decCoinExponent = 0,
-): Coin | undefined => {
+) => {
   const assetCoin = assets.find((asset) => asset.base === coin.denom);
 
   if (assetCoin) {
@@ -43,6 +44,27 @@ export const toViewDenom = (
           .toString(),
       };
     }
+  }
+};
+
+export const toViewDenom = (
+  coin: Coin,
+  assets,
+  decCoinExponent = 0,
+): Coin | undefined => {
+  const newCoin = toViewDenomByAssets(coin, assets, decCoinExponent);
+
+  if (newCoin) {
+    return newCoin;
+  }
+
+  const ibc = ibcMap.find(
+    (ibcEl) =>
+      ibcEl.assets.find((asset) => asset.base === coin.denom) !== undefined,
+  );
+
+  if (ibc) {
+    return toViewDenomByAssets(coin, ibc.assets, decCoinExponent);
   }
 
   return coin;
