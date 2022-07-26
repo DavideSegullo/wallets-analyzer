@@ -1,4 +1,7 @@
+import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
+import { chains } from 'chain-registry';
+import { lastValueFrom } from 'rxjs';
 import { AppModule } from './app.module';
 import { BanksModule } from './banks/banks.module';
 import { BanksService } from './banks/banks.service';
@@ -6,15 +9,34 @@ import { BanksService } from './banks/banks.service';
 async function bootstrap() {
   const app = await NestFactory.createApplicationContext(AppModule);
 
+  const configService = app.get(ConfigService);
+
   const banksService = app
     .select(BanksModule)
     .get(BanksService, { strict: true });
 
-  await banksService.connect('https://rpc-bitsong.itastakers.com');
-  const balances = await banksService.getBalances('bitsong1...').toPromise();
-  banksService.disconnect();
+  const chainsConfig = configService.get<{ [key: string]: string[] }>('chains');
 
-  console.log(balances);
+  for (const [chainName, addresses] of Object.entries(chainsConfig)) {
+    const chainInfo = chains.find(
+      (chain) =>
+        chain.chain_name === chainName && chain.network_type === 'mainnet',
+    );
+
+    if (chainInfo) {
+      const rpc = chainInfo.apis.rpc[0];
+
+      await banksService.connect(rpc.address);
+
+      const balances = await lastValueFrom(
+        banksService.getAddressesInfo(addresses),
+      );
+
+      console.log(JSON.stringify(balances));
+
+      banksService.disconnect();
+    }
+  }
 
   await app.close();
 }

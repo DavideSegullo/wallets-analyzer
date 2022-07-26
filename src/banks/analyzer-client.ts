@@ -17,6 +17,10 @@ import {
   StargateClientOptions,
 } from '@cosmjs/stargate';
 import { Tendermint34Client } from '@cosmjs/tendermint-rpc';
+import {
+  LockupExtension,
+  setupOsmosisLockupExtension,
+} from 'src/osmosis/query';
 
 export class AnalyzerClient extends StargateClient {
   public static async connect(
@@ -35,7 +39,8 @@ export class AnalyzerClient extends StargateClient {
         StakingExtension &
         TxExtension &
         GovExtension &
-        DistributionExtension)
+        DistributionExtension &
+        LockupExtension)
     | undefined {
     return QueryClient.withExtensions(
       this.getTmClient(),
@@ -45,6 +50,7 @@ export class AnalyzerClient extends StargateClient {
       setupGovExtension,
       setupStakingExtension,
       setupTxExtension,
+      setupOsmosisLockupExtension,
     );
   }
 
@@ -54,7 +60,8 @@ export class AnalyzerClient extends StargateClient {
     StakingExtension &
     TxExtension &
     GovExtension &
-    DistributionExtension {
+    DistributionExtension &
+    LockupExtension {
     if (!this.getQueryClient()) {
       throw new Error(
         'Query client not available. You cannot use online functionality in offline mode.',
@@ -68,5 +75,9 @@ export class AnalyzerClient extends StargateClient {
     return this.forceGetQueryClient().distribution.delegationTotalRewards(
       delegatorAddress,
     );
+  }
+
+  public accountLockedCoins(owner: string) {
+    return this.forceGetQueryClient().lockup.accountLockedCoins({ owner });
   }
 }
