@@ -59,7 +59,9 @@ async function bootstrap() {
           balances: info.balances.map((balance) =>
             toViewDenom(balance, assetsList.assets),
           ),
-          staked: toViewDenom(info.staked, assetsList.assets),
+          staked: !info.staked
+            ? null
+            : toViewDenom(info.staked, assetsList.assets),
           stakingRewards: {
             rewards: info.stakingRewards.rewards.map((reward) => ({
               validatorAddress: reward.validatorAddress,
