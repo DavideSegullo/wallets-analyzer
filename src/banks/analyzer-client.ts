@@ -21,9 +21,12 @@ import {
   QueryDelegationTotalRewardsResponse,
   QueryValidatorCommissionResponse,
 } from 'cosmjs-types/cosmos/distribution/v1beta1/query';
+import Long from 'long';
 import {
   LockupExtension,
+  GammExtension,
   setupOsmosisLockupExtension,
+  setupOsmosisGammExtension,
 } from 'src/osmosis/query';
 
 export class AnalyzerClient extends StargateClient {
@@ -44,7 +47,8 @@ export class AnalyzerClient extends StargateClient {
         TxExtension &
         GovExtension &
         DistributionExtension &
-        LockupExtension)
+        LockupExtension &
+        GammExtension)
     | undefined {
     return QueryClient.withExtensions(
       this.getTmClient(),
@@ -55,6 +59,7 @@ export class AnalyzerClient extends StargateClient {
       setupStakingExtension,
       setupTxExtension,
       setupOsmosisLockupExtension,
+      setupOsmosisGammExtension,
     );
   }
 
@@ -65,7 +70,8 @@ export class AnalyzerClient extends StargateClient {
     TxExtension &
     GovExtension &
     DistributionExtension &
-    LockupExtension {
+    LockupExtension &
+    GammExtension {
     if (!this.getQueryClient()) {
       throw new Error(
         'Query client not available. You cannot use online functionality in offline mode.',
@@ -89,6 +95,12 @@ export class AnalyzerClient extends StargateClient {
     return this.forceGetQueryClient().distribution.validatorCommission(
       validatorAddress,
     );
+  }
+
+  public pool(poolId: string) {
+    return this.forceGetQueryClient().gamm.pool({
+      poolId: Long.fromString(poolId),
+    });
   }
 
   public accountLockedCoins(owner: string) {

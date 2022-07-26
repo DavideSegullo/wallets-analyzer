@@ -26,6 +26,7 @@
     "@cosmjs/tendermint-rpc": "^0.28.11",
     "@cosmjs/utils": "^0.28.11",
     "@nestjs-modules/mailer": "^1.8.1",
+    "@nestjs/axios": "^0.1.0",
     "@nestjs/common": "^9.0.0",
     "@nestjs/config": "^2.2.0",
     "@nestjs/core": "^9.0.0",

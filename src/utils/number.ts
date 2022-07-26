@@ -1,6 +1,28 @@
 import { Coin } from '@cosmjs/stargate';
 import { BigNumber } from 'bignumber.js';
 
+export const gammToPoolAmount = (
+  currentAmount: BigNumber,
+  totalPoolGamm: BigNumber,
+  totalTokenGamm: BigNumber,
+  chainToViewConversionFactor: string,
+) => {
+  const shareRation = currentAmount.div(totalPoolGamm);
+
+  const amount = totalTokenGamm.multipliedBy(shareRation).toString();
+
+  return toDenom(amount.toString(), chainToViewConversionFactor);
+};
+
+export const toDenom = (
+  value: string | number,
+  chainToViewConversionFactor: string | number,
+) => {
+  return new BigNumber(value)
+    .multipliedBy(chainToViewConversionFactor)
+    .toString();
+};
+
 export const toViewDenom = (
   coin: Coin,
   assets,
