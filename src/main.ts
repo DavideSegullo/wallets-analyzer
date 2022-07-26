@@ -6,6 +6,7 @@ import { lastValueFrom } from 'rxjs';
 import { AppModule } from './app.module';
 import { BanksModule } from './banks/banks.module';
 import { BanksService } from './banks/banks.service';
+import { AddressesInfo, ChainMap } from './types';
 
 async function bootstrap() {
   const app = await NestFactory.createApplicationContext(AppModule);
@@ -17,10 +18,10 @@ async function bootstrap() {
     .select(BanksModule)
     .get(BanksService, { strict: true });
 
-  const chainsConfig = configService.get<{ [key: string]: string[] }>('chains');
-  const chainsWithInfo: { [key: string]: unknown } = {};
+  const chainsConfig = configService.get<ChainMap>('chains');
+  const chainsWithInfo: AddressesInfo = {};
 
-  for (const [chainName, addresses] of Object.entries(chainsConfig)) {
+  for (const [chainName, mapAddresses] of Object.entries(chainsConfig)) {
     const chainInfo = chains.find(
       (chain) =>
         chain.chain_name === chainName && chain.network_type === 'mainnet',
@@ -31,11 +32,23 @@ async function bootstrap() {
 
       await banksService.connect(rpc.address);
 
-      const balances = await lastValueFrom(
-        banksService.getAddressesInfo(addresses),
+      const addressesInfo = await lastValueFrom(
+        banksService.getAddressesInfo(mapAddresses.addresses),
       );
 
-      chainsWithInfo[chainName] = balances;
+      const validatorAddressesInfo = await lastValueFrom(
+        banksService.getValidatorAddressesInfo(mapAddresses.validatorAddresses),
+      );
+
+      if (!chains[chainName]) {
+        chainsWithInfo[chainName] = {
+          addresses: [],
+          validatorAddresses: [],
+        };
+      }
+
+      chainsWithInfo[chainName].addresses = addressesInfo;
+      chainsWithInfo[chainName].validatorAddresses = validatorAddressesInfo;
 
       banksService.disconnect();
     }

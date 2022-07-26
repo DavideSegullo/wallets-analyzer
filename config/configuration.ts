@@ -1,13 +1,46 @@
-const chainsToMap = (prefix = 'CHAINS') => {
-  const chains: { [key: string]: string[] } = {};
-  const envChains = Object.entries(process.env).filter(([key]) =>
-    key.startsWith(prefix),
+import { ChainMap } from 'src/types';
+
+const chainsToMap = (
+  prefix = 'CHAINS',
+  validatorPrefix = 'CHAINS_VALIDATORS',
+): ChainMap => {
+  const chains: ChainMap = {};
+  const addressesChains = Object.entries(process.env).filter(
+    ([key]) => key.startsWith(prefix) && !key.startsWith(validatorPrefix),
   );
 
-  for (const [key, addresses] of envChains) {
+  const validatorAddressesChains = Object.entries(process.env).filter(([key]) =>
+    key.startsWith(validatorPrefix),
+  );
+
+  for (const [key, addresses] of addressesChains) {
     const chainName = key.replace(`${prefix}_`, '').toLocaleLowerCase();
 
-    chains[chainName] = addresses.replace(/ /g, '').split(',');
+    if (!chains[chainName]) {
+      chains[chainName] = {
+        addresses: [],
+        validatorAddresses: [],
+      };
+    }
+
+    chains[chainName]['addresses'] = addresses.replace(/ /g, '').split(',');
+  }
+
+  for (const [key, addresses] of validatorAddressesChains) {
+    const chainName = key
+      .replace(`${validatorPrefix}_`, '')
+      .toLocaleLowerCase();
+
+    if (!chains[chainName]) {
+      chains[chainName] = {
+        addresses: [],
+        validatorAddresses: [],
+      };
+    }
+
+    chains[chainName].validatorAddresses = addresses
+      .replace(/ /g, '')
+      .split(',');
   }
 
   return chains;

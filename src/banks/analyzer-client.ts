@@ -18,6 +18,10 @@ import {
 } from '@cosmjs/stargate';
 import { Tendermint34Client } from '@cosmjs/tendermint-rpc';
 import {
+  QueryDelegationTotalRewardsResponse,
+  QueryValidatorCommissionResponse,
+} from 'cosmjs-types/cosmos/distribution/v1beta1/query';
+import {
   LockupExtension,
   setupOsmosisLockupExtension,
 } from 'src/osmosis/query';
@@ -71,13 +75,17 @@ export class AnalyzerClient extends StargateClient {
     return this.getQueryClient();
   }
 
-  public delegationTotalRewards(delegatorAddress: string) {
+  public delegationTotalRewards(
+    delegatorAddress: string,
+  ): Promise<QueryDelegationTotalRewardsResponse> {
     return this.forceGetQueryClient().distribution.delegationTotalRewards(
       delegatorAddress,
     );
   }
 
-  public validatorCommission(validatorAddress: string) {
+  public validatorCommission(
+    validatorAddress: string,
+  ): Promise<QueryValidatorCommissionResponse> {
     return this.forceGetQueryClient().distribution.validatorCommission(
       validatorAddress,
     );
