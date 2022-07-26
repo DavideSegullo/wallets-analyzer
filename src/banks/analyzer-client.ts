@@ -77,6 +77,12 @@ export class AnalyzerClient extends StargateClient {
     );
   }
 
+  public validatorCommission(validatorAddress: string) {
+    return this.forceGetQueryClient().distribution.validatorCommission(
+      validatorAddress,
+    );
+  }
+
   public accountLockedCoins(owner: string) {
     return this.forceGetQueryClient().lockup.accountLockedCoins({ owner });
   }

@@ -40,6 +40,10 @@ export class BanksService {
     return from(this.client.getBalanceStaked(address));
   }
 
+  validatorCommission(validatorAddress: string) {
+    return from(this.client.validatorCommission(validatorAddress));
+  }
+
   delegationTotalRewards(delegatorAddress: string) {
     return from(this.client.delegationTotalRewards(delegatorAddress));
   }

@@ -20,8 +20,10 @@ export default () => {
     chains,
     email: {
       user: process.env.EMAIL_USER, //your gmail account you used to set the project up in google cloud console"
+      to: process.env.EMAIL_TO,
       clientId: process.env.EMAIL_CLIENT_ID,
       clientSecret: process.env.EMAIL_CLIENT_SECRET,
+      refreshToken: process.env.EMAIL_REFRESH_TOKEN,
     },
   };
 };
