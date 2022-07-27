@@ -10,16 +10,18 @@ export interface ChainMap {
   };
 }
 
-export interface AddressLockedCoins extends Partial<OsmosisPool> {
+export interface AssetsGammCoins extends Partial<OsmosisPool> {
+  bondedShare: string;
   userLockedCoins: Coin[];
 }
 
 export interface AddressInfo {
   address: string;
   balances: readonly Coin[];
+  gammBalances: AssetsGammCoins[];
   staked: Coin;
   stakingRewards: QueryDelegationTotalRewardsResponse;
-  lockedCoins: AddressLockedCoins[];
+  lockedCoins: AssetsGammCoins[];
 }
 
 export interface ValidatorInfo {

@@ -4,25 +4,26 @@ import { DecCoin } from 'osmojs/types/proto/cosmos/base/v1beta1/coin';
 import { QueryDelegationTotalRewardsResponse } from 'cosmjs-types/cosmos/distribution/v1beta1/query';
 import {
   catchError,
-  combineLatest,
   forkJoin,
   from,
   map,
   Observable,
   of,
+  partition,
   switchMap,
-  throwError,
+  tap,
 } from 'rxjs';
 import { AnalyzerClient } from 'src/banks/analyzer-client';
 import BigNumber from 'bignumber.js';
 import { gammToPoolAmount } from 'src/utils';
 import { HttpService } from '@nestjs/axios';
-import { ChainData, OsmosisPool } from 'src/types';
+import { AssetsGammCoins, ChainData, OsmosisPool } from 'src/types';
 
 @Injectable()
 export class BanksService {
   client: AnalyzerClient;
   restUrl: string;
+  pools: OsmosisPool[] = [];
 
   constructor(private readonly httpService: HttpService) {}
 
@@ -35,69 +36,43 @@ export class BanksService {
   getAddressesInfo(addresses: string[]) {
     const joins = addresses.map((address) =>
       forkJoin([
-        this.getBalances(address),
+        this.getBalances(address).pipe(
+          switchMap((allBalances) => {
+            const gammBalances = allBalances.filter((balance) =>
+              balance.denom.startsWith('gamm/pool/'),
+            );
+
+            const balances = allBalances.filter(
+              (balance) => !balance.denom.startsWith('gamm/pool/'),
+            );
+
+            return forkJoin([
+              of(balances),
+              this.getAssetsFromGamm(gammBalances),
+            ]);
+          }),
+        ),
         this.getBalanceStaked(address),
         this.delegationTotalRewards(address),
         this.accountLockedCoins(address).pipe(
-          switchMap((lockedCoins) => {
-            if (lockedCoins.length > 0) {
-              return this.poolsFromLockedCoins(lockedCoins).pipe(
-                map((pools) => {
-                  return pools.map((pool) => {
-                    let bondedShare = new BigNumber(0);
-
-                    const coins = pool.poolAssets.map((asset) => {
-                      const totalPoolGamm = new BigNumber(
-                        pool.totalShares.amount,
-                      );
-                      const totalTokenGamm = new BigNumber(asset.token.amount);
-
-                      let bondedAmount = new BigNumber('0');
-
-                      const bondedBalances = lockedCoins.filter(
-                        (coin) => coin.denom === `gamm/pool/${pool.id}`,
-                      );
-
-                      for (const bondedBalance of bondedBalances) {
-                        bondedAmount = bondedAmount.plus(bondedBalance.amount);
-                      }
-
-                      bondedShare = bondedShare.plus(bondedAmount);
-
-                      const userTotalAmount = gammToPoolAmount(
-                        bondedAmount,
-                        totalPoolGamm,
-                        totalTokenGamm,
-                        '1e0',
-                      );
-
-                      return {
-                        denom: asset.token.denom,
-                        amount: userTotalAmount,
-                      };
-                    });
-
-                    return {
-                      poolId: pool.id,
-                      bondedShare: bondedShare.div(pool.totalShares.amount),
-                      userLockedCoins: coins,
-                    };
-                  });
-                }),
-              );
-            }
-
-            return of([]);
-          }),
+          switchMap((lockedCoins) => this.getAssetsFromGamm(lockedCoins)),
         ),
       ]).pipe(
-        map(([balances, staked, stakingRewards, lockedCoins]) => ({
-          address,
-          balances,
-          staked,
-          stakingRewards,
-          lockedCoins,
-        })),
+        map(
+          ([
+            [balances, gammBalances],
+            staked,
+            stakingRewards,
+            lockedCoins,
+          ]) => ({
+            address,
+            balances,
+            gammBalances,
+            staked,
+            stakingRewards,
+            lockedCoins,
+          }),
+        ),
       ),
     );
 
@@ -130,10 +105,6 @@ export class BanksService {
       map((response) =>
         response.commission ? response.commission.commission : [],
       ),
-      catchError((error) => {
-        console.error(error);
-        return throwError(error);
-      }),
     );
   }
 
@@ -151,7 +122,58 @@ export class BanksService {
     );
   }
 
-  poolsFromLockedCoins(lockedCoins: Coin[]) {
+  getAssetsFromGamm(
+    gammCoins: Coin[] | readonly Coin[],
+  ): Observable<AssetsGammCoins[]> {
+    if (gammCoins.length > 0) {
+      return this.poolsFromLockedCoins(gammCoins).pipe(
+        map((pools) => {
+          return pools.map((pool) => {
+            let bondedShare = new BigNumber(0);
+
+            const coins = pool.poolAssets.map((asset) => {
+              const totalPoolGamm = new BigNumber(pool.totalShares.amount);
+              const totalTokenGamm = new BigNumber(asset.token.amount);
+
+              let bondedAmount = new BigNumber('0');
+
+              const bondedBalances = gammCoins.filter(
+                (coin) => coin.denom === `gamm/pool/${pool.id}`,
+              );
+
+              for (const bondedBalance of bondedBalances) {
+                bondedAmount = bondedAmount.plus(bondedBalance.amount);
+              }
+
+              bondedShare = bondedShare.plus(bondedAmount);
+
+              const userTotalAmount = gammToPoolAmount(
+                bondedAmount,
+                totalPoolGamm,
+                totalTokenGamm,
+                '1e0',
+              );
+
+              return {
+                denom: asset.token.denom,
+                amount: userTotalAmount,
+              };
+            });
+
+            return {
+              poolId: pool.id,
+              bondedShare: bondedShare.div(pool.totalShares.amount).toString(),
+              userLockedCoins: coins,
+            };
+          });
+        }),
+      );
+    }
+
+    return of([]);
+  }
+
+  poolsFromLockedCoins(lockedCoins: Coin[] | readonly Coin[]) {
     const observables = lockedCoins.map((lockedCoin) => {
       const poolId = lockedCoin.denom.replace('gamm/pool/', '');
 
@@ -162,11 +184,22 @@ export class BanksService {
   }
 
   pool(poolId: string): Observable<OsmosisPool> {
-    return this.httpService
-      .get<ChainData<'pool', OsmosisPool>>(
-        `${this.restUrl}/osmosis/gamm/v1beta1/pools/${poolId}`,
-      )
-      .pipe(map((response) => response.data.pool));
+    const poolCache = this.pools.find((pool) => pool.id === poolId);
+
+    if (!poolCache) {
+      return this.httpService
+        .get<ChainData<'pool', OsmosisPool>>(
+          `${this.restUrl}/osmosis/gamm/v1beta1/pools/${poolId}`,
+        )
+        .pipe(
+          map((response) => response.data.pool),
+          tap((pool) => {
+            this.pools.push(pool);
+          }),
+        );
+    }
+
+    return of(poolCache);
   }
 
   disconnect() {

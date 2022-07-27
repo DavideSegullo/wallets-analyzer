@@ -59,6 +59,12 @@ async function bootstrap() {
           balances: info.balances.map((balance) =>
             toViewDenom(balance, assetsList.assets),
           ),
+          gammBalances: info.gammBalances.map((gammBalance) => ({
+            ...gammBalance,
+            userLockedCoins: gammBalance.userLockedCoins.map((coin) =>
+              toViewDenom(coin, assetsList.assets),
+            ),
+          })),
           staked: !info.staked
             ? null
             : toViewDenom(info.staked, assetsList.assets),
