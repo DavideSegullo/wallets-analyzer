@@ -44,6 +44,8 @@ export class BanksService {
               return this.poolsFromLockedCoins(lockedCoins).pipe(
                 map((pools) => {
                   return pools.map((pool) => {
+                    let bondedShare = new BigNumber(0);
+
                     const coins = pool.poolAssets.map((asset) => {
                       const totalPoolGamm = new BigNumber(
                         pool.totalShares.amount,
@@ -60,11 +62,13 @@ export class BanksService {
                         bondedAmount = bondedAmount.plus(bondedBalance.amount);
                       }
 
+                      bondedShare = bondedShare.plus(bondedAmount);
+
                       const userTotalAmount = gammToPoolAmount(
                         bondedAmount,
                         totalPoolGamm,
                         totalTokenGamm,
-                        '1e-6',
+                        '1e0',
                       );
 
                       return {
@@ -74,7 +78,8 @@ export class BanksService {
                     });
 
                     return {
-                      ...pool,
+                      poolId: pool.id,
+                      bondedShare: bondedShare.div(pool.totalShares.amount),
                       userLockedCoins: coins,
                     };
                   });

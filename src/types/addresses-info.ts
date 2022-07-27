@@ -10,7 +10,7 @@ export interface ChainMap {
   };
 }
 
-export interface AddressLockedCoins extends OsmosisPool {
+export interface AddressLockedCoins extends Partial<OsmosisPool> {
   userLockedCoins: Coin[];
 }
 

@@ -6,7 +6,7 @@ import { lastValueFrom } from 'rxjs';
 import { AppModule } from './app.module';
 import { BanksModule } from './banks/banks.module';
 import { BanksService } from './banks/banks.service';
-import { AddressesInfo, ChainMap } from './types';
+import { AddressesInfo, AddressInfo, ChainMap } from './types';
 import { toViewDenom } from './utils';
 
 async function bootstrap() {
@@ -37,7 +37,7 @@ async function bootstrap() {
 
         await banksService.connect(rpc.address, rest.address);
 
-        const addressesInfo = await lastValueFrom(
+        const addressesInfo: AddressInfo[] = await lastValueFrom(
           banksService.getAddressesInfo(mapAddresses.addresses),
         );
 
@@ -73,6 +73,12 @@ async function bootstrap() {
               toViewDenom(totalReward, assetsList.assets, 18),
             ),
           },
+          lockedCoins: info.lockedCoins.map((lockedCoin) => ({
+            ...lockedCoin,
+            userLockedCoins: lockedCoin.userLockedCoins.map((coin) =>
+              toViewDenom(coin, assetsList.assets),
+            ),
+          })),
         }));
 
         chainsWithInfo[chainName].validatorAddresses =
