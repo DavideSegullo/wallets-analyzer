@@ -27,16 +27,16 @@ import {
   GammExtension,
   setupOsmosisLockupExtension,
   setupOsmosisGammExtension,
-} from 'src/osmosis/query';
+} from 'src/query-client/osmosis/query';
 
-export class AnalyzerClient extends StargateClient {
+export class AnalyzerQueryClient extends StargateClient {
   public static async connect(
     endpoint: string | HttpEndpoint,
     options: StargateClientOptions = {},
-  ): Promise<AnalyzerClient> {
+  ): Promise<AnalyzerQueryClient> {
     const tmClient = await Tendermint34Client.connect(endpoint);
 
-    return new AnalyzerClient(tmClient, options);
+    return new AnalyzerQueryClient(tmClient, options);
   }
 
   protected getQueryClient():

@@ -9,11 +9,10 @@ import {
   map,
   Observable,
   of,
-  partition,
   switchMap,
   tap,
 } from 'rxjs';
-import { AnalyzerClient } from 'src/banks/analyzer-client';
+import { AnalyzerQueryClient } from 'src/query-client/query-client';
 import BigNumber from 'bignumber.js';
 import { gammToPoolAmount } from 'src/utils';
 import { HttpService } from '@nestjs/axios';
@@ -21,14 +20,14 @@ import { AssetsGammCoins, ChainData, OsmosisPool } from 'src/types';
 
 @Injectable()
 export class BanksService {
-  client: AnalyzerClient;
+  client: AnalyzerQueryClient;
   restUrl: string;
   pools: OsmosisPool[] = [];
 
   constructor(private readonly httpService: HttpService) {}
 
   async connect(rpcUrl: string, restUrl: string) {
-    this.client = await AnalyzerClient.connect(rpcUrl);
+    this.client = await AnalyzerQueryClient.connect(rpcUrl);
 
     this.restUrl = restUrl;
   }

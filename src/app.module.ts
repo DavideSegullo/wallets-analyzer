@@ -1,11 +1,13 @@
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { BanksModule } from './banks/banks.module';
+import { BanksModule } from './modules/banks/banks.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MailerModule } from '@nestjs-modules/mailer';
 import { google } from 'googleapis';
-import configuration from 'config/configuration';
+import { OsmosisModule } from './modules/osmosis/osmosis.module';
+import { CosmosModule } from './modules/cosmos/cosmos.module';
+import configuration from 'src/config/configuration';
 
 @Module({
   imports: [
@@ -48,6 +50,8 @@ import configuration from 'config/configuration';
       inject: [ConfigService],
     }),
     BanksModule,
+    OsmosisModule,
+    CosmosModule,
   ],
   controllers: [AppController],
   providers: [AppService],
