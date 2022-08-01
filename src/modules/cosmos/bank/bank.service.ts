@@ -1,11 +1,11 @@
 import { Coin } from '@cosmjs/stargate';
 import { Injectable } from '@nestjs/common';
 import { from, Observable, switchMap } from 'rxjs';
-import { ChainsClientService } from 'src/modules/chains/chains-client/chains-client.service';
+import { ChainRpcService } from 'src/modules/chains/chain-rpc/chain-rpc.service';
 
 @Injectable()
 export class BankService {
-  constructor(private readonly chainsClient: ChainsClientService) {}
+  constructor(private readonly chainsClient: ChainRpcService) {}
 
   getBalances(address: string): Observable<readonly Coin[]> {
     return this.chainsClient.queryClient.pipe(

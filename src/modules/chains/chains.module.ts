@@ -2,7 +2,8 @@ import { HttpModule } from '@nestjs/axios';
 import { Module, Scope } from '@nestjs/common';
 import { REQUEST } from '@nestjs/core';
 import { extractChainName } from 'src/utils';
-import { ChainsClientService } from './chains-client/chains-client.service';
+import { HttpMultiNodeService } from './http-multi-node/http-multi-node.service';
+import { ChainRpcService } from './chain-rpc/chain-rpc.service';
 
 @Module({
   imports: [HttpModule],
@@ -15,8 +16,9 @@ import { ChainsClientService } from './chains-client/chains-client.service';
       inject: [REQUEST],
       scope: Scope.REQUEST,
     },
-    ChainsClientService,
+    HttpMultiNodeService,
+    ChainRpcService,
   ],
-  exports: ['ANALYZER_CHAIN', ChainsClientService],
+  exports: ['ANALYZER_CHAIN', HttpMultiNodeService, ChainRpcService],
 })
 export class ChainsModule {}

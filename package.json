@@ -33,6 +33,7 @@
     "@nestjs/mapped-types": "*",
     "@nestjs/platform-express": "^9.0.0",
     "@nestjs/swagger": "^6.0.4",
+    "axios": "^0.27.2",
     "bignumber.js": "^9.0.2",
     "chain-registry": "^0.0.26",
     "chain-registry-utils": "^0.0.6",

@@ -6,15 +6,15 @@ import {
 } from 'src/types';
 import { Injectable } from '@nestjs/common';
 import { map, Observable } from 'rxjs';
-import { ChainsClientService } from 'src/modules/chains/chains-client/chains-client.service';
+import { HttpMultiNodeService } from 'src/modules/chains/http-multi-node/http-multi-node.service';
 
 @Injectable()
 export class PoolsService {
-  constructor(private readonly chainsClient: ChainsClientService) {}
+  constructor(private readonly httpService: HttpMultiNodeService) {}
 
   pool(poolId: string): Observable<OsmosisPool> {
-    return this.chainsClient.httpClient
-      .get<ChainData<'pool', OsmosisPool>>(
+    return this.httpService
+      .getRetry<ChainData<'pool', OsmosisPool>>(
         `/osmosis/gamm/v1beta1/pools/${poolId}`,
       )
       .pipe(map((response) => response.data.pool));
@@ -23,8 +23,8 @@ export class PoolsService {
   pools(
     params: ChainPaginationParams = { 'pagination.limit': '1000' },
   ): Observable<OsmosisPool[]> {
-    return this.chainsClient.httpClient
-      .get<ChainPaginationResponse<'pools', OsmosisPool[]>>(
+    return this.httpService
+      .getRetry<ChainPaginationResponse<'pools', OsmosisPool[]>>(
         `/osmosis/gamm/v1beta1/pools`,
         { params },
       )

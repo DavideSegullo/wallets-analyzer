@@ -2,11 +2,11 @@ import { Injectable } from '@nestjs/common';
 import { DecCoin } from 'cosmjs-types/cosmos/base/v1beta1/coin';
 import { QueryDelegationTotalRewardsResponse } from 'cosmjs-types/cosmos/distribution/v1beta1/query';
 import { from, map, Observable, switchMap } from 'rxjs';
-import { ChainsClientService } from 'src/modules/chains/chains-client/chains-client.service';
+import { ChainRpcService } from 'src/modules/chains/chain-rpc/chain-rpc.service';
 
 @Injectable()
 export class DistributionService {
-  constructor(private readonly chainsClient: ChainsClientService) {}
+  constructor(private readonly chainsClient: ChainRpcService) {}
 
   validatorCommission(validatorAddress: string): Observable<DecCoin[]> {
     return this.chainsClient.queryClient.pipe(

@@ -1,13 +1,13 @@
 import { Coin } from '@cosmjs/stargate';
 import { Injectable } from '@nestjs/common';
 import { catchError, from, Observable, of, switchMap } from 'rxjs';
-import { ChainsClientService } from 'src/modules/chains/chains-client/chains-client.service';
+import { ChainRpcService } from 'src/modules/chains/chain-rpc/chain-rpc.service';
 
 @Injectable()
 export class LockupService {
-  constructor(private readonly chainsClient: ChainsClientService) {}
+  constructor(private readonly chainsClient: ChainRpcService) {}
 
-  accountLockedCoins(owner: string): Observable<Coin[]> {
+  lockedCoins(owner: string): Observable<Coin[]> {
     return this.chainsClient.queryClient.pipe(
       switchMap((connection) =>
         from(connection.accountLockedCoins(owner)).pipe(
