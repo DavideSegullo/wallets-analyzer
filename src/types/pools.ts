@@ -1,9 +1,5 @@
 import { Coin } from '@cosmjs/stargate';
 
-export type ChainData<T extends string, K> = {
-  [key in T]: K;
-};
-
 export interface PoolParams {
   swapFee: string;
   exitFee: string;

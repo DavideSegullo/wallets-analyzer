@@ -5,21 +5,25 @@ import { ChainConfig } from 'src/types';
 
 @Injectable()
 export class ChainsClientService {
-  public client: AnalyzerQueryClient;
+  public queryClient: AnalyzerQueryClient;
 
   constructor(
     @Inject('ANALYZER_CHAIN') chain: ChainConfig,
-    private readonly httpService: HttpService,
+    public readonly httpClient: HttpService,
   ) {
     const rpcUrl = chain.apis.rpc[0].address;
     const restUrl = chain.apis.rest[0].address;
 
     this.connect(rpcUrl);
 
-    this.httpService.axiosRef.defaults.baseURL = restUrl;
+    this.httpClient.axiosRef.defaults.baseURL = restUrl;
   }
 
-  async connect(rpcUrl: string) {
-    this.client = await AnalyzerQueryClient.connect(rpcUrl);
+  private async connect(rpcUrl: string) {
+    this.queryClient = await AnalyzerQueryClient.connect(rpcUrl);
+  }
+
+  disconnect() {
+    this.queryClient.disconnect();
   }
 }
