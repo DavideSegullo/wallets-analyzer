@@ -1,11 +1,12 @@
 import { HttpService } from '@nestjs/axios';
 import { Inject, Injectable } from '@nestjs/common';
+import { from, Observable } from 'rxjs';
 import { AnalyzerQueryClient } from 'src/query-client/query-client';
 import { ChainConfig } from 'src/types';
 
 @Injectable()
 export class ChainsClientService {
-  public queryClient: AnalyzerQueryClient;
+  public queryClient: Observable<AnalyzerQueryClient>;
 
   constructor(
     @Inject('ANALYZER_CHAIN') chain: ChainConfig,
@@ -20,10 +21,6 @@ export class ChainsClientService {
   }
 
   private async connect(rpcUrl: string) {
-    this.queryClient = await AnalyzerQueryClient.connect(rpcUrl);
-  }
-
-  disconnect() {
-    this.queryClient.disconnect();
+    this.queryClient = from(AnalyzerQueryClient.connect(rpcUrl));
   }
 }

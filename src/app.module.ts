@@ -7,6 +7,7 @@ import { OsmosisModule } from './modules/osmosis/osmosis.module';
 import { CosmosModule } from './modules/cosmos/cosmos.module';
 import configuration from 'src/config/configuration';
 import { ChainsModule } from './modules/chains/chains.module';
+import { AccountsModule } from './modules/accounts/accounts.module';
 
 @Module({
   imports: [
@@ -52,6 +53,7 @@ import { ChainsModule } from './modules/chains/chains.module';
     OsmosisModule,
     CosmosModule,
     ChainsModule,
+    AccountsModule,
   ],
 })
 export class AppModule {}
