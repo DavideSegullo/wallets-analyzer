@@ -1,6 +1,4 @@
 import { Module } from '@nestjs/common';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
 import { BanksModule } from './modules/banks/banks.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MailerModule } from '@nestjs-modules/mailer';
@@ -8,6 +6,7 @@ import { google } from 'googleapis';
 import { OsmosisModule } from './modules/osmosis/osmosis.module';
 import { CosmosModule } from './modules/cosmos/cosmos.module';
 import configuration from 'src/config/configuration';
+import { ChainsModule } from './modules/chains/chains.module';
 
 @Module({
   imports: [
@@ -52,8 +51,7 @@ import configuration from 'src/config/configuration';
     BanksModule,
     OsmosisModule,
     CosmosModule,
+    ChainsModule,
   ],
-  controllers: [AppController],
-  providers: [AppService],
 })
 export class AppModule {}
