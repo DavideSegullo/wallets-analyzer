@@ -5,17 +5,13 @@ import { QueryDelegationTotalRewardsResponse } from 'cosmjs-types/cosmos/distrib
 import {
   BehaviorSubject,
   catchError,
-  delayWhen,
   firstValueFrom,
   forkJoin,
   from,
-  lastValueFrom,
   map,
   Observable,
   of,
-  partition,
   retryWhen,
-  Subject,
   switchMap,
   tap,
 } from 'rxjs';
@@ -28,15 +24,15 @@ import { AssetsGammCoins, ChainData, OsmosisPool } from 'src/types';
 @Injectable()
 export class BanksService {
   client: AnalyzerClient;
-  restUrl: string;
+  restUrls: string[];
   pools: OsmosisPool[] = [];
 
   constructor(private readonly httpService: HttpService) {}
 
-  async connect(rpcUrl: string[], restUrl: string) {
+  async connect(rpcUrl: string[], restUrls: string[]) {
     this.client = await firstValueFrom(this.connectRetry(rpcUrl));
 
-    this.restUrl = restUrl;
+    this.restUrls = restUrls;
   }
 
   connectRetry(rpcUrls: string[]) {
@@ -211,16 +207,31 @@ export class BanksService {
     const poolCache = this.pools.find((pool) => pool.id === poolId);
 
     if (!poolCache) {
-      return this.httpService
-        .get<ChainData<'pool', OsmosisPool>>(
-          `${this.restUrl}/osmosis/gamm/v1beta1/pools/${poolId}`,
-        )
-        .pipe(
-          map((response) => response.data.pool),
-          tap((pool) => {
-            this.pools.push(pool);
-          }),
-        );
+      const retry = new BehaviorSubject<number>(0);
+
+      return retry.pipe(
+        switchMap((count) => {
+          return this.httpService
+            .get<ChainData<'pool', OsmosisPool>>(
+              `${this.restUrls[count]}/osmosis/gamm/v1beta1/pools/${poolId}`,
+            )
+            .pipe(
+              map((response) => response.data.pool),
+              tap((pool) => {
+                this.pools.push(pool);
+                retry.complete();
+              }),
+            );
+        }),
+        retryWhen((errors) =>
+          errors.pipe(
+            //log error message
+            tap(() => {
+              retry.next(retry.value + 1);
+            }),
+          ),
+        ),
+      );
     }
 
     return of(poolCache);
