@@ -3,13 +3,19 @@ import { Injectable } from '@nestjs/common';
 import { DecCoin } from 'osmojs/types/proto/cosmos/base/v1beta1/coin';
 import { QueryDelegationTotalRewardsResponse } from 'cosmjs-types/cosmos/distribution/v1beta1/query';
 import {
+  BehaviorSubject,
   catchError,
+  delayWhen,
+  firstValueFrom,
   forkJoin,
   from,
+  lastValueFrom,
   map,
   Observable,
   of,
   partition,
+  retryWhen,
+  Subject,
   switchMap,
   tap,
 } from 'rxjs';
@@ -27,10 +33,28 @@ export class BanksService {
 
   constructor(private readonly httpService: HttpService) {}
 
-  async connect(rpcUrl: string, restUrl: string) {
-    this.client = await AnalyzerClient.connect(rpcUrl);
+  async connect(rpcUrl: string[], restUrl: string) {
+    this.client = await firstValueFrom(this.connectRetry(rpcUrl));
 
     this.restUrl = restUrl;
+  }
+
+  connectRetry(rpcUrls: string[]) {
+    const retry = new BehaviorSubject<number>(0);
+
+    return retry.pipe(
+      switchMap((count) => {
+        return AnalyzerClient.connect(rpcUrls[count]);
+      }),
+      retryWhen((errors) =>
+        errors.pipe(
+          //log error message
+          tap(() => {
+            retry.next(retry.value + 1);
+          }),
+        ),
+      ),
+    );
   }
 
   getAddressesInfo(addresses: string[]) {

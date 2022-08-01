@@ -32,10 +32,10 @@ async function bootstrap() {
       const assetsList = assets.find((asset) => asset.chain_name === chainName);
 
       if (chainInfo && assetsList) {
-        const rpc = chainInfo.apis.rpc[0];
+        const rpc = chainInfo.apis.rpc.map((el) => el.address);
         const rest = chainInfo.apis.rest[0];
 
-        await banksService.connect(rpc.address, rest.address);
+        await banksService.connect(rpc, rest.address);
 
         const addressesInfo: AddressInfo[] = await lastValueFrom(
           banksService.getAddressesInfo(mapAddresses.addresses),
