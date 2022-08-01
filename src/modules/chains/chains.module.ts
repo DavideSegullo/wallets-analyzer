@@ -11,7 +11,9 @@ import { ChainRpcService } from './chain-rpc/chain-rpc.service';
     {
       provide: 'ANALYZER_CHAIN',
       useFactory: (request) => {
-        return extractChainName(request);
+        if (request.params && request.params.chain) {
+          return extractChainName(request.params.chain);
+        }
       },
       inject: [REQUEST],
       scope: Scope.REQUEST,

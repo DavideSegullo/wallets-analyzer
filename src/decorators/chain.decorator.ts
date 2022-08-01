@@ -2,9 +2,11 @@ import { createParamDecorator, ExecutionContext } from '@nestjs/common';
 import { extractChainName } from 'src/utils';
 
 export const Chain = createParamDecorator(
-  (data: unknown, ctx: ExecutionContext) => {
+  (_: unknown, ctx: ExecutionContext) => {
     const request = ctx.switchToHttp().getRequest();
 
-    return extractChainName(request);
+    if (request.params && request.params.chain) {
+      return extractChainName(request.params.chain);
+    }
   },
 );
