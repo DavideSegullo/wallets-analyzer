@@ -4,45 +4,29 @@ import { Type } from 'class-transformer';
 import { IsArray, IsNotEmpty, IsString, ValidateNested } from 'class-validator';
 import { Document } from 'mongoose';
 import { Coin } from './coin.schema';
-import { PoolAsset } from './pool-asset.schema';
+import { PoolAsset, PoolAssetSchema } from './pool-asset.schema';
+import { PoolMeta } from './pool-meta.schema';
 import { PoolParams } from './pool-params.schema';
 
 export type PoolDocument = Pool & Document;
 
-@Schema({ timestamps: true })
+@Schema({
+  timestamps: true,
+  timeseries: {
+    timeField: 'createdAt',
+    metaField: 'poolMeta',
+    granularity: 'hours',
+  },
+})
 export class Pool {
-  @Prop({ type: String, required: true })
-  @IsString()
-  @ApiProperty()
-  name: string;
-
-  @Prop({ type: String, required: true, index: true })
-  @IsString()
-  @ApiProperty({
-    description: 'Pool creator address',
-  })
-  address: string;
-
-  @Prop({ type: String, required: true, unique: true, index: true })
-  @IsString()
-  @ApiProperty({
-    description: 'Pool ID on Osmosis Chain',
-  })
-  id: string;
-
-  @Prop({ type: PoolParams, required: true })
+  @Prop({ type: PoolMeta, required: true })
   @ValidateNested({ each: true })
   @IsNotEmpty()
-  @Type(() => PoolParams)
+  @Type(() => PoolMeta)
   @ApiProperty({
-    type: PoolParams,
+    type: PoolMeta,
   })
-  poolParams: PoolParams;
-
-  @Prop({ type: String, required: true })
-  @IsString()
-  @ApiProperty()
-  futurePoolGovernor: string;
+  poolMeta: PoolMeta;
 
   @Prop({ type: Coin, required: true })
   @ValidateNested({ each: true })
@@ -53,7 +37,7 @@ export class Pool {
   })
   totalShares: Coin;
 
-  @Prop({ type: [{ type: PoolAsset, default: [] }] })
+  @Prop({ type: [PoolAssetSchema], default: [] })
   @IsArray()
   @ValidateNested({ each: true })
   @IsNotEmpty()

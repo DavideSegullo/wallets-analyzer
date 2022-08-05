@@ -8,6 +8,8 @@ import { CosmosModule } from './modules/cosmos/cosmos.module';
 import { ChainsModule } from './modules/chains/chains.module';
 import { AccountsModule } from './modules/accounts/accounts.module';
 import { MongooseModule } from '@nestjs/mongoose';
+import { ScheduleModule } from '@nestjs/schedule';
+import { SnapshotsModule } from './modules/snapshots/snapshots.module';
 import configuration from 'src/config/configuration';
 
 @Module({
@@ -63,11 +65,13 @@ import configuration from 'src/config/configuration';
       },
       inject: [ConfigService],
     }),
+    ScheduleModule.forRoot(),
     BanksModule,
     OsmosisModule,
     CosmosModule,
     ChainsModule,
     AccountsModule,
+    SnapshotsModule,
   ],
 })
 export class AppModule {}

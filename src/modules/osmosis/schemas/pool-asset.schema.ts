@@ -3,13 +3,13 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsNotEmpty, IsString, ValidateNested } from 'class-validator';
 import { Document } from 'mongoose';
-import { Coin } from './coin.schema';
+import { Coin, CoinSchema } from './coin.schema';
 
 export type PoolAssetDocument = PoolAsset & Document;
 
 @Schema({ _id: false })
 export class PoolAsset {
-  @Prop({ type: Coin, required: true })
+  @Prop({ type: CoinSchema, required: true })
   @ValidateNested({ each: true })
   @IsNotEmpty()
   @Type(() => Coin)
