@@ -58,5 +58,11 @@ export default () => {
       clientSecret: process.env.EMAIL_CLIENT_SECRET,
       refreshToken: process.env.EMAIL_REFRESH_TOKEN,
     },
+    mongo: {
+      uri: process.env.MONGODB_HOST,
+      dbName: process.env.MONGODB_DB_NAME,
+      user: process.env.MONGODB_ROOT_USERNAME,
+      pass: process.env.MONGODB_ROOT_PASSWORD,
+    },
   };
 };

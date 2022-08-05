@@ -1,22 +1,22 @@
 import { Coin } from '@cosmjs/stargate';
 
-export interface PoolParams {
+export interface RawPoolParams {
   swapFee: string;
   exitFee: string;
   smoothWeightChangeParams: string | null;
 }
 
-export interface OsmosisPoolAsset {
+export interface RawOsmosisPoolAsset {
   token: Coin;
   weight: string;
 }
 
-export interface OsmosisPool {
+export interface RawOsmosisPool {
   address: string;
   id: string;
-  poolParams: PoolParams;
+  poolParams: RawPoolParams;
   future_pool_governor: string;
   totalShares: Coin;
-  poolAssets: OsmosisPoolAsset[];
+  poolAssets: RawOsmosisPoolAsset[];
   totalWeight: string;
 }

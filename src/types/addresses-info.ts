@@ -1,7 +1,7 @@
 import { Coin } from '@cosmjs/stargate';
 import { DecCoin } from 'cosmjs-types/cosmos/base/v1beta1/coin';
 import { QueryDelegationTotalRewardsResponse } from 'cosmjs-types/cosmos/distribution/v1beta1/query';
-import { OsmosisPool } from './pools';
+import { RawOsmosisPool } from './pools';
 
 export interface ChainMap {
   [key: string]: {
@@ -10,7 +10,7 @@ export interface ChainMap {
   };
 }
 
-export interface AssetsGammCoins extends Partial<OsmosisPool> {
+export interface AssetsGammCoins extends Partial<RawOsmosisPool> {
   bondedShare: string;
   userLockedCoins: Coin[];
 }

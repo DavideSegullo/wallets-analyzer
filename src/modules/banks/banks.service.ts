@@ -16,13 +16,13 @@ import { AnalyzerQueryClient } from 'src/query-client/query-client';
 import BigNumber from 'bignumber.js';
 import { gammToPoolAmount } from 'src/utils';
 import { HttpService } from '@nestjs/axios';
-import { AssetsGammCoins, ChainData, OsmosisPool } from 'src/types';
+import { AssetsGammCoins, ChainData, RawOsmosisPool } from 'src/types';
 
 @Injectable()
 export class BanksService {
   client: AnalyzerQueryClient;
   restUrl: string;
-  pools: OsmosisPool[] = [];
+  pools: RawOsmosisPool[] = [];
 
   constructor(private readonly httpService: HttpService) {}
 
@@ -182,12 +182,12 @@ export class BanksService {
     return forkJoin(observables);
   }
 
-  pool(poolId: string): Observable<OsmosisPool> {
+  pool(poolId: string): Observable<RawOsmosisPool> {
     const poolCache = this.pools.find((pool) => pool.id === poolId);
 
     if (!poolCache) {
       return this.httpService
-        .get<ChainData<'pool', OsmosisPool>>(
+        .get<ChainData<'pool', RawOsmosisPool>>(
           `${this.restUrl}/osmosis/gamm/v1beta1/pools/${poolId}`,
         )
         .pipe(

@@ -5,15 +5,29 @@ import { MailerModule } from '@nestjs-modules/mailer';
 import { google } from 'googleapis';
 import { OsmosisModule } from './modules/osmosis/osmosis.module';
 import { CosmosModule } from './modules/cosmos/cosmos.module';
-import configuration from 'src/config/configuration';
 import { ChainsModule } from './modules/chains/chains.module';
 import { AccountsModule } from './modules/accounts/accounts.module';
+import { MongooseModule } from '@nestjs/mongoose';
+import configuration from 'src/config/configuration';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
       load: [configuration],
+    }),
+    MongooseModule.forRootAsync({
+      useFactory(config: ConfigService) {
+        const mongoConfig = config.get('mongo');
+
+        return {
+          uri: mongoConfig.uri,
+          dbName: mongoConfig.dbName,
+          user: mongoConfig.user,
+          pass: mongoConfig.pass,
+        };
+      },
+      inject: [ConfigService],
     }),
     MailerModule.forRootAsync({
       async useFactory(config: ConfigService) {
