@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { OsmosisModule } from 'src/modules/osmosis/osmosis.module';
+import { OsmosisModule } from '../osmosis/osmosis.module';
 import { SnapshotService } from './snapshot/snapshot.service';
 
 @Module({

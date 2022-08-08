@@ -1,4 +1,3 @@
-import { HttpService } from '@nestjs/axios';
 import { Inject, Injectable } from '@nestjs/common';
 import {
   BehaviorSubject,
@@ -17,10 +16,7 @@ export class ChainRpcService {
   public queryClient: Observable<AnalyzerQueryClient>;
   public rpcUrls: string[] = [];
 
-  constructor(
-    @Inject('ANALYZER_CHAIN') chain: ChainConfig,
-    public readonly httpClient: HttpService,
-  ) {
+  constructor(@Inject('ANALYZER_CHAIN') chain: ChainConfig) {
     this.rpcUrls = chain.apis.rpc.map((node) => node.address);
 
     this.connect();

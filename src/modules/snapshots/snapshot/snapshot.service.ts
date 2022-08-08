@@ -1,13 +1,12 @@
 import { Injectable } from '@nestjs/common';
-import { Cron, CronExpression, SchedulerRegistry } from '@nestjs/schedule';
+import { SchedulerRegistry } from '@nestjs/schedule';
 import { CronJob } from 'cron';
-import { PoolsService } from 'src/modules/osmosis/pools/pools.service';
 
 @Injectable()
 export class SnapshotService {
-  constructor(private poolsService: PoolsService) {}
+  constructor(private readonly schedulerRegistry: SchedulerRegistry) {}
 
-  /* handleCron(exec: () => void, time = '45 * * * * *') {
+  handleCron(exec: () => void, time = '10 * * * * *') {
     const job = new CronJob(time, () => {
       exec();
     });
@@ -15,13 +14,5 @@ export class SnapshotService {
     this.schedulerRegistry.addCronJob(`${Date.now()}`, job);
 
     job.start();
-  } */
-
-  @Cron(CronExpression.EVERY_10_SECONDS)
-  savePools() {
-    console.log(this.poolsService);
-    /* this.handleCron(() => {
-      console.log('cioao');
-    }); */
   }
 }

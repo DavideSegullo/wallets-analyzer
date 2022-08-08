@@ -42,10 +42,15 @@ export class PoolsService {
       map((pools) =>
         pools.map<Pool>((pool) => {
           const poolMeta: PoolMeta = {
-            id: pool.id,
             address: pool.address,
-            poolParams: pool.poolParams,
+            id: pool.id,
             futurePoolGovernor: pool.future_pool_governor,
+            poolParams: {
+              swapFee: pool.poolParams.swapFee,
+              exitFee: pool.poolParams.exitFee,
+              smoothWeightChangeParams:
+                pool.poolParams.smoothWeightChangeParams,
+            },
           };
 
           return {
@@ -56,7 +61,9 @@ export class PoolsService {
           };
         }),
       ),
-      switchMap((pools) => from(this.poolModel.insertMany(pools))),
+      switchMap((pools) => {
+        return from(this.poolModel.insertMany(pools));
+      }),
     );
   }
 }

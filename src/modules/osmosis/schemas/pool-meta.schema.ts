@@ -16,7 +16,7 @@ export class PoolMeta {
   })
   address: string;
 
-  @Prop({ type: String, required: true, unique: true, index: true })
+  @Prop({ type: String, required: true, index: true })
   @IsString()
   @ApiProperty({
     description: 'Pool ID on Osmosis Chain',
@@ -32,7 +32,7 @@ export class PoolMeta {
   })
   poolParams: PoolParams;
 
-  @Prop({ type: String, required: true })
+  @Prop({ type: String })
   @IsString()
   @ApiProperty()
   futurePoolGovernor: string;

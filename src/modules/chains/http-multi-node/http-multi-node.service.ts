@@ -1,18 +1,27 @@
 import { HttpService } from '@nestjs/axios';
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import { AxiosResponse, AxiosRequestConfig } from 'axios';
 import { BehaviorSubject, Observable, of, retry, switchMap, tap } from 'rxjs';
 import { ChainConfig } from 'src/types';
+import { extractChainName } from 'src/utils';
 
 @Injectable()
 export class HttpMultiNodeService {
-  public restUrls: string[] = [];
+  private readonly logger = new Logger(HttpMultiNodeService.name);
+
+  static restUrls: string[] = [];
 
   constructor(
     @Inject('ANALYZER_CHAIN') chain: ChainConfig,
     private readonly httpClient: HttpService,
   ) {
-    this.restUrls = chain.apis.rest.map((node) => node.address);
+    HttpMultiNodeService.restUrls = chain.apis.rest.map((node) => node.address);
+  }
+
+  static setChain(chainName: string) {
+    const chain = extractChainName(chainName);
+
+    HttpMultiNodeService.restUrls = chain.apis.rest.map((node) => node.address);
   }
 
   getRetry<T = any>(
@@ -24,7 +33,7 @@ export class HttpMultiNodeService {
     return connectionRetry.pipe(
       switchMap((attempt) => {
         return this.httpClient
-          .get<T>(`${this.restUrls[attempt]}${url}`, config)
+          .get<T>(`${HttpMultiNodeService.restUrls[attempt]}${url}`, config)
           .pipe(
             tap(() => {
               connectionRetry.complete();
@@ -32,7 +41,7 @@ export class HttpMultiNodeService {
           );
       }),
       retry({
-        count: this.restUrls.length,
+        count: HttpMultiNodeService.restUrls.length,
         delay: (_, retryCount) => {
           connectionRetry.next(retryCount);
 

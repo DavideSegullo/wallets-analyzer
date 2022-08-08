@@ -11,9 +11,11 @@ import { ChainRpcService } from './chain-rpc/chain-rpc.service';
     {
       provide: 'ANALYZER_CHAIN',
       useFactory: (request) => {
-        if (request.params && request.params.chain) {
+        if (request && request.params && request.params.chain) {
           return extractChainName(request.params.chain);
         }
+
+        return extractChainName('osmosis');
       },
       inject: [REQUEST],
       scope: Scope.REQUEST,

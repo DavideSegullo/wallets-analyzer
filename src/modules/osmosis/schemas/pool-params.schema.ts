@@ -19,7 +19,7 @@ export class PoolParams {
   @ApiProperty()
   exitFee: string;
 
-  @Prop({ type: String, required: true })
+  @Prop({ type: String })
   @IsString()
   @ApiProperty()
   smoothWeightChangeParams: string | null;
