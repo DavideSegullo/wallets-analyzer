@@ -36,6 +36,9 @@ export class ChainRpcService {
       retry({
         count: this.rpcUrls.length,
         delay: (_, retryCount) => {
+          console.error(
+            `Error on node: ${this.rpcUrls[retryCount]}, attempt ${retryCount}/this.rpcUrls.length`,
+          );
           connectionRetry.next(retryCount);
 
           return of(retryCount);

@@ -1,4 +1,4 @@
-import { getIbcAssets } from 'chain-registry-utils';
+import { getIbcAssets } from '@chain-registry/utils';
 import { assets, ibc } from 'chain-registry';
 
 export const ibcMap = [
